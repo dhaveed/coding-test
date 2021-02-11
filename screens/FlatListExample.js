@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Text,
   View,
@@ -8,7 +8,6 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
 
 const LIST_DATA = [
   {
@@ -47,9 +46,9 @@ export const FlatListExample = () => {
     });
   };
 
-  const PopUp = () => {
+  const PopUp = ({ style }) => {
     return (
-      <View style={styles.popup}>
+      <View style={[styles.popup, { ...style }]}>
         <Text style={styles.popupItem}>Edit</Text>
         <Text style={styles.popupItem}>Delete</Text>
       </View>
@@ -58,43 +57,49 @@ export const FlatListExample = () => {
 
   const ListItem = (props) => {
     const { item } = props.item;
+    const [click, setClick] = useState(false);
+
     return (
-      <View>
-        <View style={[styles.listItemWrap]}>
-          <Text style={styles.listItemTitle}>{item.title}</Text>
-          <TouchableOpacity onPress={() => togglePop(item.id, !popState.shown)}>
-            <Feather name="more-vertical" size={16} />
-          </TouchableOpacity>
-        {popState.shown && popState.id == item.id && <PopUp />}
-        </View>
+      <View style={styles.listItemWrap}>
+        <Text style={styles.listItemTitle}>{item.title}</Text>
+        <TouchableOpacity onPress={() => togglePop(item.id, !click)}>
+          <Feather name="more-vertical" size={16} />
+        </TouchableOpacity>
       </View>
     );
   };
 
-  return (
-    <View style={{ }}>
-      <TouchableWithoutFeedback
-      style={{ borderWidth: 1, }}
-      onPress={() => togglePop(null, false)}
-    >
-      <View style={styles.container}>
-        <FlatList
-          data={LIST_DATA}
-          renderItem={(item) => {
-            let zIndex = {
-              zIndex: LIST_DATA.length - item.id
-            }
-            return (
-              <View>
-                <ListItem item={item} />
-              </View>
-            );
-          }}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingHorizontal: 30 }}
-        />
+  const renderListItem = (item) => {
+    return (
+      <View>
+        <ListItem item={item} />
+        {popState.shown && popState.id == item.item.id && (
+          <PopUp />
+        )}
       </View>
-    </TouchableWithoutFeedback>
+    );
+  };
+
+  const listKeyExtractor = (item) => item.id.toString(); 
+
+  return (
+    <View style={{ height: "100%" }}>
+      <TouchableWithoutFeedback onPress={() => togglePop(null, false)}>
+        <View style={styles.container}>
+          <FlatList
+            data={LIST_DATA}
+            CellRendererComponent={renderListItem}
+            keyExtractor={listKeyExtractor}
+            // contentContainerStyle={{ paddingHorizontal: 30, flex: 1, }}
+            style={{
+              // flexDirection: "column-reverse",
+              paddingHorizontal: 30,
+              flex: 1,
+            }}
+            // inverted
+          />
+        </View>
+      </TouchableWithoutFeedback>
     </View>
   );
 };
@@ -102,32 +107,34 @@ export const FlatListExample = () => {
 const styles = StyleSheet.create({
   container: {
     paddingTop: 80,
+    flex: 1,
   },
   listItemWrap: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     width: "100%",
-    paddingVertical: 15,
-    paddingHorizontal: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
     backgroundColor: "white",
     marginBottom: 30,
     shadowColor: "#000",
     shadowOffset: {
-        width: 0,
-        height: 2,
+      width: 0,
+      height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5, // for the list
+    elevation: 5,
   },
   popup: {
     backgroundColor: "white",
-    padding: 15,
-    elevation: 7,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    elevation: 70,
     position: "absolute",
-    right: 0,
-    bottom: -60,
+    right: 10,
+    bottom: -30,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -137,12 +144,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
   },
   popupItem: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#00000060",
-    marginBottom: 5
+    marginVertical: 5,
   },
   listItemTitle: {
     fontWeight: "500",
-    fontSize: 16
-  }
+    fontSize: 16,
+  },
 });
